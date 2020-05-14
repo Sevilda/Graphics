@@ -21,7 +21,7 @@
 struct Camera camera;
 
 GLfloat light_position[] = {0, 0, 0, 0};
-GLfloat light_ambient[] = { 1, 1, 1, 0 };
+GLfloat light_ambient[] = { 0.8, 0.8, 0.8, 0 };
 GLfloat light_diffuse[] = { 0.5, 0.5, 0, 0 };
 GLfloat light_specular[] = { 1, 1, 1, 0 };
 GLfloat spot_direction[] = { 300, -100, 200};
@@ -615,7 +615,7 @@ void initialize()
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHT2);
 	
-	light_ambient[0] = light_ambient[1]= light_ambient[2] =1;
+	light_ambient[0] = light_ambient[1]= light_ambient[2] =0.8;
 	
 
     glShadeModel(GL_SMOOTH);
