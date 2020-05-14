@@ -104,9 +104,10 @@ void draw_model(const struct Model* model)
 
 void draw_skybox(Complicated skybox)
 {
-
 	int D= skybox_size;
   glEnable(GL_TEXTURE_2D);
+  
+  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, skybox.material_ambient);
 
   glBindTexture(GL_TEXTURE_2D,skybox.texture[1]);
   glBegin(GL_QUADS);
@@ -162,6 +163,7 @@ void draw_skybox(Complicated skybox)
 void draw_environment(World world, Rotate* rotate, Move move ){
 	
 	int D = skybox_size;
+	float white[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	
 
 	//Draw the  skybox.
@@ -173,13 +175,17 @@ void draw_environment(World world, Rotate* rotate, Move move ){
      glPushMatrix();
 
     		glTranslatef(move.boat.x, move.boat.y, move.boat.z);
-    		glMaterialfv(GL_FRONT, GL_AMBIENT, world.boat.material_ambient);
+			
     		glBindTexture(GL_TEXTURE_2D, world.boat.texture[0]);
 			glBindTexture(GL_TEXTURE_2D, world.boat.texture[1]);
     		glScalef(1.0f, 1.0f, 1.0f);
-
-
 			glRotatef(rotate->boat_rotation, 0, 1, 0);
+			
+			glEnable(GL_COLOR_MATERIAL);
+			glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+			
+    		glMaterialfv(GL_FRONT, GL_AMBIENT, world.boat.material_ambient);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, white);
 			draw_model(&world.boat.model);
 
    glPopMatrix();
@@ -192,13 +198,18 @@ void draw_environment(World world, Rotate* rotate, Move move ){
      glPushMatrix();
 
 
-    		glMaterialfv(GL_FRONT, GL_AMBIENT, world.island.material_ambient);
     		glBindTexture(GL_TEXTURE_2D, world.island.texture[0]);
 			glBindTexture(GL_TEXTURE_2D, world.island.texture[1]);
 			glBindTexture(GL_TEXTURE_2D, world.island.texture[2]);
 			glBindTexture(GL_TEXTURE_2D, world.island.texture[3]);
     		glScalef(1.0f, 1.0f, 1.0f);
-			glTranslatef (D*0.8, -100, D*0.8);
+			glTranslatef (D*0.8, -50, D*0.8);
+			
+			glEnable(GL_COLOR_MATERIAL);
+			glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+			
+    		glMaterialfv(GL_FRONT, GL_AMBIENT, world.island.material_ambient);
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, white);
     		draw_model(&world.island.model);
 
    glPopMatrix();
@@ -208,14 +219,19 @@ void draw_environment(World world, Rotate* rotate, Move move ){
       glPushMatrix();
 
 	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-	GLfloat low_shininess[] = { 5.0 };
-	    		glMaterialfv(GL_FRONT, GL_AMBIENT, world.chest.material_ambient);
-				glBindTexture(GL_TEXTURE_2D, world.chest.texture);			
-				glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-				glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
-			glTranslatef (D*0.8-100,50 , D*0.8-100);
-			    		glRotatef(180, 0, 1, 0);
-							glScalef(20.0f, 20.0f, 20.0f);
+	    		//glMaterialfv(GL_FRONT, GL_AMBIENT, world.chest.material_ambient);
+				glBindTexture(GL_TEXTURE_2D, world.chest.texture);	
+				glTranslatef (D*0.8-100,100 , D*0.8-100);
+			    glRotatef(180, 0, 1, 0);
+				glScalef(20.0f, 20.0f, 20.0f);
+				
+			glEnable(GL_COLOR_MATERIAL);
+			glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+			
+			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+			glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 120);
+			glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
+			
     		draw_model(&world.chest.model);
 
    glPopMatrix();
