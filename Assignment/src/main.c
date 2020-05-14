@@ -18,18 +18,16 @@
 **/
 
 
-
+struct Camera camera;
 
 GLfloat light_position[] = {0, 0, 0, 0};
 GLfloat light_ambient[] = { 1, 1, 1, 0 };
 GLfloat light_diffuse[] = { 0.5, 0.5, 0, 0 };
 GLfloat light_specular[] = { 1, 1, 1, 0 };
-GLfloat spot_direction[] = { 600, 500, 600 };
+GLfloat spot_direction[] = { 300, -100, 200};
 float fogDensity = 0.00065;
 
-GLuint filter;
-GLuint fogMode[]= { GL_EXP, GL_EXP2, GL_LINEAR };
-GLfloat fogColor[4]= {0.6f, 0.6f, 0.6f, 1.0f};  
+
 
 
 static float front_mat_shininess[] = {30.0};
@@ -41,7 +39,7 @@ static float back_mat_diffuse[] = {1.0, 0.0, 0.0, 1.0};
 
 
 typedef GLubyte Pixel;
-struct Camera camera;
+
 struct Game game;
 struct Game
 {
@@ -141,11 +139,11 @@ void update_environment(struct Camera* camera, double elapsed_time)
 	}
 	
 	if (game.increase_fog== TRUE) {
-		fogDensity+=0.0001;
+		fogDensity+=0.0005;
 	}
 	
 	if (game.decrease_fog== TRUE) {
-		fogDensity-=0.0001;
+		fogDensity-=0.0005;
 	}
 	
 	if (game.enable_free_cam == TRUE) {
@@ -172,6 +170,17 @@ void update_environment(struct Camera* camera, double elapsed_time)
 	
 	stay_in (camera, &move, &rotate);
 
+}
+
+update_light( Move* move) {
+	
+	GLfloat light_position2[] = {-move->boat.x, -move->boat.y, -move->boat.z, 0.5};
+	GLfloat light_diffuse2[] = { 1, 0.8, 0.8, 0.5 };
+	
+	glLightfv(GL_LIGHT2, GL_POSITION, light_position2);
+   //glLightfv(GL_LIGHT2, GL_SPECULAR, light_specular2);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, light_diffuse2);
+	
 }
 
 //Move the boat at the basic speed of the camera.
@@ -207,7 +216,7 @@ if (game.move_boat_b == TRUE)
 
 //Checks if the player has found the island
 void collision (Move* move) {
-	int D = (0.55+checkpoint*0.07)*skybox_size;
+	int D = (0.55+checkpoint*0.09)*skybox_size;
 	
 	if(move->boat.x >= D && move->boat.z >=D){
 		checkpoint+=1;
@@ -318,33 +327,32 @@ void display() {
 
 		elapsed_time = calc_elapsed_time();
 		update_environment(&camera,  elapsed_time);
+		update_light(&move);
 		rotate_boat(&rotate);
 		rowing(&move, &rotate, elapsed_time, &camera);
 		set_view_point(&camera, &move, &rotate);
 		collision(&move);
+	
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90);
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_direction);
+	
+	glLightfv(GL_LIGHT1, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+	
 
-		glLightfv(GL_LIGHT1, GL_POSITION, light_position);
-        glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
-        glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
-		glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+	glEnable(GL_FOG);
+	GLfloat fogColor[4]= {0.6f, 0.6f, 0.6f, 1.0f};
+	glFogi(GL_FOG_MODE, GL_EXP);       
+	glFogfv(GL_FOG_COLOR, fogColor);         
+	glFogf(GL_FOG_DENSITY, fogDensity);  
+	glHint(GL_FOG_HINT, GL_FASTEST);  
+	glFogf(GL_FOG_START, 0); 
+	glFogf(GL_FOG_END, 1); 
+
 		
-		glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 45.0);
-
-		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_direction);
-
-		glMaterialfv(GL_FRONT, GL_SPECULAR, light_specular);
-		glEnable(GL_LIGHT1);
-		
-		 
-		glFogi(GL_FOG_MODE, fogMode[0]);       
-		glFogfv(GL_FOG_COLOR, fogColor);         
-		glFogf(GL_FOG_DENSITY, fogDensity);  
-		glHint(GL_FOG_HINT, GL_FASTEST);  
-		glFogf(GL_FOG_START, 0); 
-		glFogf(GL_FOG_END, 1); 
-		glEnable(GL_FOG);
-
-
 		draw_environment(world, &rotate, move);
 		reshape(WINDOW_WIDTH, WINDOW_HEIGHT);
 		glutSwapBuffers();
@@ -601,6 +609,15 @@ void initialize()
 	
 	set_callbacks();
 	init_camera(&camera, &move, &rotate);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT2);
+	
+	light_ambient[0] = light_ambient[1]= light_ambient[2] =1;
+	
+
     glShadeModel(GL_SMOOTH);
     glEnable(GL_NORMALIZE);
     glEnable(GL_AUTO_NORMAL);
@@ -610,13 +627,11 @@ void initialize()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_COLOR_MATERIAL);
     glClearDepth(1.0);
-	glMaterialfv(GL_FRONT, GL_SHININESS, front_mat_shininess);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, front_mat_specular);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, front_mat_diffuse);
-	glMaterialfv(GL_BACK, GL_SHININESS, back_mat_shininess);
+	//glMaterialfv(GL_FRONT, GL_DIFFUSE, front_mat_diffuse);
 	glMaterialfv(GL_BACK, GL_SPECULAR, back_mat_specular);
-	glMaterialfv(GL_BACK, GL_DIFFUSE, back_mat_diffuse);
-	glEnable(GL_LIGHTING);
+	//glMaterialfv(GL_BACK, GL_DIFFUSE, back_mat_diffuse);	
+	glMaterialfv(GL_FRONT, GL_SPECULAR, light_specular);
 	
     init_entities(&world);
 	
