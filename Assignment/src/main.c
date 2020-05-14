@@ -79,10 +79,7 @@ int mouse_x, mouse_y;
 int previous_time;
 int help, help_on = 1;
 float speed = 60;
-float angle = 135;
-double degree = 0;
-double distance_a = 4000;
-double distance_b = 2000;
+
 
 
 double calc_elapsed_time()
