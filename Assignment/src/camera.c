@@ -1,4 +1,3 @@
-#include <windows.h>
 #include "camera.h"
 #include "draw.h"
 #include <GL/glut.h>
