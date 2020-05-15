@@ -1,4 +1,3 @@
-#include <windows.h>
 #include <GL/glut.h>
 #include <GL/gl.h>
 #include "SOIL/SOIL.h"
@@ -19,23 +18,9 @@
 
 
 struct Camera camera;
+GLfloat light_ambient[] = { 0.6, 0.6, 0.6, 0 };
 
-GLfloat light_position[] = {0, 0, 0, 0};
-GLfloat light_ambient[] = { 0.8, 0.8, 0.8, 0 };
-GLfloat light_diffuse[] = { 0.5, 0.5, 0, 0 };
-GLfloat light_specular[] = { 1, 1, 1, 0 };
-GLfloat spot_direction[] = { 300, -100, 200};
 float fogDensity = 0.00065;
-
-
-
-
-static float front_mat_shininess[] = {30.0};
-static float front_mat_specular[] = {1.0, 1.0, 1.0, 1.0};
-static float front_mat_diffuse[] = {0.0, 1.0, 0.0, 1.0};
-static float back_mat_shininess[] = {50.0};
-static float back_mat_specular[] = {0.0, 0.0, 1.0, 1.0};
-static float back_mat_diffuse[] = {1.0, 0.0, 0.0, 1.0};
 
 
 typedef GLubyte Pixel;
@@ -79,7 +64,10 @@ int mouse_x, mouse_y;
 int previous_time;
 int help, help_on = 1;
 float speed = 60;
-
+float angle = 135;
+double degree = 0;
+double distance_a = 4000;
+double distance_b = 2000;
 
 
 double calc_elapsed_time()
@@ -126,13 +114,19 @@ void update_environment(struct Camera* camera, double elapsed_time)
 	}
 
 	if (game.increase_light == TRUE) {
-		if (light_ambient[0] < 1)
-			light_ambient[0] = light_ambient[1] = light_ambient[2] += 0.05;
+		if (light_ambient[0] < 1) {
+			light_ambient[0] += 0.05;
+									printf("\n%f", light_ambient[0]);
+			light_ambient[1] = light_ambient[2] =light_ambient[0];
+		}
 	}
 
 	if (game.decrease_light == TRUE) {
-		if (light_ambient[0] > -1)
-			light_ambient[0] = light_ambient[1] = light_ambient[2] -= 0.05;
+		if (light_ambient[0] > 0){
+			light_ambient[0] -= 0.05;
+									printf("\n%f", light_ambient[0]);
+			light_ambient[1] = light_ambient[2] =light_ambient[0];
+		}
 	}
 	
 	if (game.increase_fog== TRUE) {
@@ -169,11 +163,35 @@ void update_environment(struct Camera* camera, double elapsed_time)
 
 }
 
-update_light( Move* move) {
+void set_lightings()
+{
 	
-	GLfloat light_position2[] = {-move->boat.x, -move->boat.y, -move->boat.z, 0.5};
+	GLfloat light_position[] = {0, 0, 0, 0};
+	GLfloat light_diffuse[] = { 0.5, 0.5, 0, 0 };
+	GLfloat light_specular[] = { 1, 1, 1, 0 };
+	GLfloat spot_direction[] = { 300, -100, 200};
+	
+
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90);
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_direction);
+	
+	glLightfv(GL_LIGHT1, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+	
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT2);
+}
+
+update_light( Move* move,Rotate* rotate) {
+	double angle = degree_to_radian(rotate->boat_rotation);
+	
+	GLfloat light_position2[] = {-move->boat.x+sin(angle)*1, -2, -move->boat.z+cos(angle)*1, 0.5};
 	GLfloat light_diffuse2[] = { 1, 0.8, 0.8, 0.5 };
-	
 	glLightfv(GL_LIGHT2, GL_POSITION, light_position2);
    //glLightfv(GL_LIGHT2, GL_SPECULAR, light_specular2);
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, light_diffuse2);
@@ -254,7 +272,7 @@ void specialFunc(int key, int x, int y) {
 	case GLUT_KEY_F1:
 		if (help_on) {
 			help_on = 0;
-
+			printf("\n%f", light_ambient[0]);
 			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, light_ambient);
 			glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light_ambient);
 		}else {
@@ -324,30 +342,22 @@ void display() {
 
 		elapsed_time = calc_elapsed_time();
 		update_environment(&camera,  elapsed_time);
-		update_light(&move);
+		update_light(&move, &rotate);
 		rotate_boat(&rotate);
+		set_lightings();
 		rowing(&move, &rotate, elapsed_time, &camera);
 		set_view_point(&camera, &move, &rotate);
 		collision(&move);
-	
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90);
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_direction);
-	
-	glLightfv(GL_LIGHT1, GL_POSITION, light_position);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
-	
+		
 
-	glEnable(GL_FOG);
-	GLfloat fogColor[4]= {0.6f, 0.6f, 0.6f, 1.0f};
-	glFogi(GL_FOG_MODE, GL_EXP);       
-	glFogfv(GL_FOG_COLOR, fogColor);         
-	glFogf(GL_FOG_DENSITY, fogDensity);  
-	glHint(GL_FOG_HINT, GL_FASTEST);  
-	glFogf(GL_FOG_START, 0); 
-	glFogf(GL_FOG_END, 1); 
+		glEnable(GL_FOG);
+		GLfloat fogColor[4]= {0.6f, 0.6f, 0.6f, 1.0f};
+		glFogi(GL_FOG_MODE, GL_EXP);       
+		glFogfv(GL_FOG_COLOR, fogColor);         
+		glFogf(GL_FOG_DENSITY, fogDensity);  
+		glHint(GL_FOG_HINT, GL_FASTEST);  
+		glFogf(GL_FOG_START, 0); 
+		glFogf(GL_FOG_END, 1); 
 
 		
 		draw_environment(world, &rotate, move);
@@ -606,13 +616,8 @@ void initialize()
 	
 	set_callbacks();
 	init_camera(&camera, &move, &rotate);
-
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_LIGHT1);
-	glEnable(GL_LIGHT2);
 	
-	light_ambient[0] = light_ambient[1]= light_ambient[2] =0.8;
+	light_ambient[0] = light_ambient[1]= light_ambient[2] =0.6;
 	
 
     glShadeModel(GL_SMOOTH);
@@ -624,11 +629,7 @@ void initialize()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_COLOR_MATERIAL);
     glClearDepth(1.0);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, front_mat_specular);
-	//glMaterialfv(GL_FRONT, GL_DIFFUSE, front_mat_diffuse);
-	glMaterialfv(GL_BACK, GL_SPECULAR, back_mat_specular);
-	//glMaterialfv(GL_BACK, GL_DIFFUSE, back_mat_diffuse);	
-	glMaterialfv(GL_FRONT, GL_SPECULAR, light_specular);
+
 	
     init_entities(&world);
 	
