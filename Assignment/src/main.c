@@ -122,7 +122,7 @@ void update_environment(struct Camera* camera, double elapsed_time)
 	}
 
 	if (game.decrease_light == TRUE) {
-		if (light_ambient[0] > 0){
+		if (light_ambient[0] > -0.5){
 			light_ambient[0] -= 0.02;
 									printf("\n%f", light_ambient[0]);
 			light_ambient[1] = light_ambient[2] =light_ambient[0];
