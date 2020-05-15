@@ -115,7 +115,7 @@ void update_environment(struct Camera* camera, double elapsed_time)
 
 	if (game.increase_light == TRUE) {
 		if (light_ambient[0] < 1) {
-			light_ambient[0] += 0.05;
+			light_ambient[0] += 0.02;
 									printf("\n%f", light_ambient[0]);
 			light_ambient[1] = light_ambient[2] =light_ambient[0];
 		}
@@ -123,7 +123,7 @@ void update_environment(struct Camera* camera, double elapsed_time)
 
 	if (game.decrease_light == TRUE) {
 		if (light_ambient[0] > 0){
-			light_ambient[0] -= 0.05;
+			light_ambient[0] -= 0.02;
 									printf("\n%f", light_ambient[0]);
 			light_ambient[1] = light_ambient[2] =light_ambient[0];
 		}
@@ -134,7 +134,7 @@ void update_environment(struct Camera* camera, double elapsed_time)
 	}
 	
 	if (game.decrease_fog== TRUE) {
-		fogDensity-=0.0005;
+		fogDensity-=0.0002;
 	}
 	
 	if (game.enable_free_cam == TRUE) {
