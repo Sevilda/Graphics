@@ -198,10 +198,9 @@ void draw_environment(World world, Rotate* rotate, Move move ){
    
      glPushMatrix();
 
-    		glBindTexture(GL_TEXTURE_2D, world.island.texture[0]);
+
 			glBindTexture(GL_TEXTURE_2D, world.island.texture[1]);
-			//glBindTexture(GL_TEXTURE_2D, world.island.texture[2]);
-			//glBindTexture(GL_TEXTURE_2D, world.island.texture[3]);
+
     		glScalef(1.0f, 1.0f, 1.0f);
 			glTranslatef (D*0.8, -75, D*0.8);
 			
