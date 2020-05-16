@@ -536,10 +536,8 @@ void init_entities(World* world){
 	
 	//Load the island	
 	load_model("objects\\palm_island.obj", &world->island.model);
-	world->island.texture[0] = load_texture("textures\\stone.jpg");
-	world->island.texture[1] = load_texture("textures\\sand_2.jpg");
-	world->island.texture[2] = load_texture("textures\\palm.jpg");
-	world->island.texture[3] = load_texture("textures\\sand_1.jpg");
+
+	world->island.texture[1] = load_texture("textures\\sand_1.jpg");
 	
 	
 	//Load the boat
