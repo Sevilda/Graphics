@@ -1,3 +1,4 @@
+
 #include "draw.h"
 #include <GL/glut.h>
 #include <stdio.h>
@@ -105,7 +106,7 @@ void draw_skybox(Complicated skybox)
 	int D= skybox_size;
   glEnable(GL_TEXTURE_2D);
   
-  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, skybox.material_ambient);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, skybox.material_ambient);
 
   glBindTexture(GL_TEXTURE_2D,skybox.texture[1]);
   glBegin(GL_QUADS);
@@ -165,6 +166,7 @@ void draw_environment(World world, Rotate* rotate, Move move ){
 	
 
 	//Draw the  skybox.
+
 	draw_skybox(world.skybox);
 	
 
@@ -178,6 +180,7 @@ void draw_environment(World world, Rotate* rotate, Move move ){
 			glBindTexture(GL_TEXTURE_2D, world.boat.texture[1]);
     		glScalef(1.0f, 1.0f, 1.0f);
 			glRotatef(rotate->boat_rotation, 0, 1, 0);
+			glRotatef(rotate->boat_rocking, 0, 0, 1);
 			
 			glEnable(GL_COLOR_MATERIAL);
 			glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
@@ -195,13 +198,12 @@ void draw_environment(World world, Rotate* rotate, Move move ){
    
      glPushMatrix();
 
-
     		glBindTexture(GL_TEXTURE_2D, world.island.texture[0]);
 			glBindTexture(GL_TEXTURE_2D, world.island.texture[1]);
-			glBindTexture(GL_TEXTURE_2D, world.island.texture[2]);
-			glBindTexture(GL_TEXTURE_2D, world.island.texture[3]);
+			//glBindTexture(GL_TEXTURE_2D, world.island.texture[2]);
+			//glBindTexture(GL_TEXTURE_2D, world.island.texture[3]);
     		glScalef(1.0f, 1.0f, 1.0f);
-			glTranslatef (D*0.8, -50, D*0.8);
+			glTranslatef (D*0.8, -75, D*0.8);
 			
 			glEnable(GL_COLOR_MATERIAL);
 			glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
@@ -217,14 +219,13 @@ void draw_environment(World world, Rotate* rotate, Move move ){
       glPushMatrix();
 
 	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-	    		//glMaterialfv(GL_FRONT, GL_AMBIENT, world.chest.material_ambient);
+	    		glMaterialfv(GL_FRONT, GL_AMBIENT, world.chest.material_ambient);
 				glBindTexture(GL_TEXTURE_2D, world.chest.texture);	
-				glTranslatef (D*0.8-100,100 , D*0.8-100);
-			    glRotatef(180, 0, 1, 0);
+				glTranslatef (D*0.8-100,75 , D*0.8-100);
+				glRotatef(180, 0, 1, 0);
 				glScalef(20.0f, 20.0f, 20.0f);
-				
-			glEnable(GL_COLOR_MATERIAL);
-			glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+				glEnable(GL_COLOR_MATERIAL);
+				glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 			
 			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
 			glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 120);
