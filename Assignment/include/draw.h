@@ -1,7 +1,7 @@
 #ifndef DRAW_H
 #define DRAW_H
 #include "model.h"
-#define SKYBOX_SIZE 20000.0
+
 
 typedef struct Position
 {
@@ -12,6 +12,8 @@ typedef struct Position
 
 typedef struct {
 	double boat_rotation;
+	double boat_rocking;
+	int rock;
 }Rotate;
 
 typedef struct{
