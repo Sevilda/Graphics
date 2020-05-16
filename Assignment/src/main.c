@@ -185,7 +185,6 @@ void set_lightings()
 	GLfloat ones[] = { 1, 1, 1, 1 };
 	glLightfv(GL_LIGHT2, GL_POSITION, light_position1);
     glLightfv(GL_LIGHT2, GL_AMBIENT, ones);
-	glDisable(GL_LIGHT2);
 	
 	
 }
@@ -316,6 +315,7 @@ void specialFunc(int key, int x, int y) {
 			glEnable(GL_LIGHTING);
 			glEnable(GL_LIGHT2);
 			glDisable(GL_LIGHT1);
+
 			
 		}
 	}
@@ -368,6 +368,7 @@ void draw_help() {
 //Display function
 void display() {
 	if (!help_on) {
+
 		double elapsed_time;
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glMatrixMode(GL_MODELVIEW);
@@ -619,7 +620,7 @@ void set_callbacks() {
 void initialize()
 {
 
-
+	glEnable(GL_LIGHT2);
 
     glShadeModel(GL_SMOOTH);
     glEnable(GL_NORMALIZE);
