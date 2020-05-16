@@ -20,7 +20,8 @@
 struct Camera camera;
 GLfloat light_ambient[] = { 0.6, 0.6, 0.6, 0 };
 
-float fogDensity = 0.00065;
+
+float fogDensity = 0.00085;
 
 
 typedef GLubyte Pixel;
@@ -129,12 +130,14 @@ void update_environment(struct Camera* camera, double elapsed_time)
 		}
 	}
 	
+	
 	if (game.increase_fog== TRUE) {
-		fogDensity+=0.0005;
+		fogDensity+=0.0001;
 	}
 	
 	if (game.decrease_fog== TRUE) {
-		fogDensity-=0.0002;
+		if (fogDensity>0.0003)
+		fogDensity-=0.0001;
 	}
 	
 	if (game.enable_free_cam == TRUE) {
@@ -165,41 +168,59 @@ void update_environment(struct Camera* camera, double elapsed_time)
 
 void set_lightings()
 {
-	
-	GLfloat light_position[] = {0, 0, 0, 0};
-	GLfloat light_diffuse[] = { 0.5, 0.5, 0, 0 };
-	GLfloat light_specular[] = { 1, 1, 1, 0 };
-	GLfloat spot_direction[] = { 300, -100, 200};
-	
 
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90);
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_direction);
+
+	GLfloat light_position1[] = {0, 0, 0, 0};
+	GLfloat light_diffuse1[] = { 0, 0, 0, 0 };
+	GLfloat light_specular1[] = { 1, 1, 1, 0 };
 	
-	glLightfv(GL_LIGHT1, GL_POSITION, light_position);
+	glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
     glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular1);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse1);
 	
 	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
-	glEnable(GL_LIGHT2);
+	
+	GLfloat ones[] = { 1, 1, 1, 1 };
+	glLightfv(GL_LIGHT2, GL_POSITION, light_position1);
+    glLightfv(GL_LIGHT2, GL_AMBIENT, ones);
+	glDisable(GL_LIGHT2);
+	
+	
 }
 
 update_light( Move* move,Rotate* rotate) {
-	double angle = degree_to_radian(rotate->boat_rotation);
 	
-	GLfloat light_position2[] = {-move->boat.x+sin(angle)*1, -2, -move->boat.z+cos(angle)*1, 0.5};
-	GLfloat light_diffuse2[] = { 1, 0.8, 0.8, 0.5 };
-	glLightfv(GL_LIGHT2, GL_POSITION, light_position2);
-   //glLightfv(GL_LIGHT2, GL_SPECULAR, light_specular2);
-	glLightfv(GL_LIGHT2, GL_DIFFUSE, light_diffuse2);
+	/*  GLfloat mat_ambient[] = { 0.7, 0.7, 0.7, 1.0 };
+		glPushMatrix();
+		glTranslatef(move->boat.x, 2, move->boat.z);
+		GLfloat emission[] = {0.3, 0.2, 0.2, 0.0};
+		glMaterialfv(GL_FRONT, GL_EMISSION, emission);
+		//glutSolidTeapot(0.1); 	
+	glPopMatrix();
+	*/
+	
+	
+	 glPushMatrix();
+	 	glDisable(GL_LIGHT0);
+		GLfloat light_position[]={0, 0, 0};
+		GLfloat light_diffuse[] = { 1, 0.6, 0.6};
+		glTranslatef(move->boat.x, 4, move->boat.z);
+		glRotatef(((rotate->boat_rotation)), 0, 2, 0); 
+		glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.01);
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+	glPopMatrix();
 	
 }
 
+
 //Move the boat at the basic speed of the camera.
 void rowing (Move* move, Rotate* rotate, double elapsed_time, struct Camera* camera){
+
 	
 	double distance;
 	distance = elapsed_time * camera->MOVE_SPEED *speed;
@@ -220,22 +241,35 @@ if (game.move_boat_f == TRUE && game.collision==FALSE)
 		move->boat.z = move->boat.z;
 	}
 
-
 if (game.move_boat_b == TRUE)
 	  {move->boat.x +=distance * sin(angle);
 		move->boat.y =0;
 		move->boat.z +=distance * cos(angle) ;
 	}
-
+	
+	if (rotate->boat_rocking < 3 && rotate->rock==1) {
+		rotate->boat_rocking  +=0.05;
+		}
+	else	if (rotate->boat_rocking >= 3&& rotate->rock==1) {
+			rotate->rock=0;
+			rotate->boat_rocking  -=0.05;
+		}
+	else if (rotate->boat_rocking > -3&&rotate->rock==0){
+		rotate->boat_rocking  -=0.05;
+	}
+	else	if (rotate->boat_rocking <=-3&&rotate->rock==0) {
+			rotate->rock=1;
+			rotate->boat_rocking  +=0.05;
+		}
 }
 
 //Checks if the player has found the island
 void collision (Move* move) {
-	int D = (0.55+checkpoint*0.09)*skybox_size;
+	int D = (0.55+checkpoint*0.08)*skybox_size;
 	
 	if(move->boat.x >= D && move->boat.z >=D){
 		checkpoint+=1;
-	initialize();
+		initialize();
 	}
 
 }
@@ -273,13 +307,16 @@ void specialFunc(int key, int x, int y) {
 		if (help_on) {
 			help_on = 0;
 			printf("\n%f", light_ambient[0]);
-			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, light_ambient);
-			glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light_ambient);
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT1);
+			glDisable(GL_LIGHT2);
+		
 		}else {
 			help_on = 1;
-			GLfloat ones[] = { 1, 1, 1, 1 };
-			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ones);
-			glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ones);
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT2);
+			glDisable(GL_LIGHT1);
+			
 		}
 	}
 }
@@ -301,11 +338,6 @@ void reshape(GLsizei width, GLsizei height) {
 //Funciton to draw the help. if the final checkpoint has been reached, sleep and exit.
 void draw_help() {
 
-	GLfloat ones[] = { 1, 1, 1, 1 };
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ones);
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ones);
-
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -324,6 +356,7 @@ void draw_help() {
 	glDisable(GL_TEXTURE_2D);
 	reshape(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutSwapBuffers();
+
 	
 	if (checkpoint==3)
 	{
@@ -348,6 +381,7 @@ void display() {
 		rowing(&move, &rotate, elapsed_time, &camera);
 		set_view_point(&camera, &move, &rotate);
 		collision(&move);
+		draw_environment(world, &rotate, move);
 		
 
 		glEnable(GL_FOG);
@@ -360,12 +394,11 @@ void display() {
 		glFogf(GL_FOG_END, 1); 
 
 		
-		draw_environment(world, &rotate, move);
+
 		reshape(WINDOW_WIDTH, WINDOW_HEIGHT);
 		glutSwapBuffers();
 
 	}
-
 	else {
 		draw_help();
 	}
@@ -585,40 +618,8 @@ void set_callbacks() {
 
 void initialize()
 {
-	time_t t;
-	srand((unsigned) time(&t));
-	if (checkpoint ==0){
-	help = load_texture("textures//help2.jpg");
-	skybox_size=3000;
-	rotate.boat_rotation=rand() % 360;
-	help_on=TRUE;
-	}
-	else if (checkpoint ==1){
-	help = load_texture("textures//help1.png");
-	skybox_size=5000;
-	rotate.boat_rotation=rand() % 360;
-	move.boat.x=move.boat.z=0;
-	help_on=TRUE;
-	}
-	else if (checkpoint ==2) {help = load_texture("textures//help.png");
-	skybox_size= 7000;
-	fogDensity = 0.00065;
-	rotate.boat_rotation=rand() % 360;
-	move.boat.x=move.boat.z=0;
-	help_on=TRUE;
-	}
-	else if (checkpoint==3) {
-	help = load_texture("textures//finish.png");	
-	skybox_size=3000;
-	help_on=TRUE;
-	};
 
-	
-	set_callbacks();
-	init_camera(&camera, &move, &rotate);
-	
-	light_ambient[0] = light_ambient[1]= light_ambient[2] =0.6;
-	
+
 
     glShadeModel(GL_SMOOTH);
     glEnable(GL_NORMALIZE);
@@ -634,6 +635,44 @@ void initialize()
     init_entities(&world);
 	
     glEnable(GL_TEXTURE_2D);
+	
+	time_t t;
+	srand((unsigned) time(&t));
+	if (checkpoint ==0){
+	help = load_texture("textures//help2.jpg");
+	skybox_size=3000;
+	light_ambient[0]=light_ambient[1]=light_ambient[2]=0.65;
+	rotate.boat_rotation=rand() % 360;
+	help_on=TRUE;
+	}
+	else if (checkpoint ==1){
+	help = load_texture("textures//help1.png");
+	skybox_size=5000;
+	fogDensity = 0.002;
+	light_ambient[0]=light_ambient[1]=light_ambient[2]=0.65;
+	rotate.boat_rotation=rand() % 360;
+	move.boat.x=move.boat.z=0;
+	help_on=TRUE;
+	}
+	else if (checkpoint ==2) {help = load_texture("textures//help.png");
+	skybox_size= 7000;
+	fogDensity = 0.001;
+	light_ambient[0]=light_ambient[1]=light_ambient[2]=0.65;
+	rotate.boat_rotation=rand() % 360;
+	move.boat.x=move.boat.z=0;
+	help_on=TRUE;
+	}
+	else if (checkpoint==3) {
+	help = load_texture("textures//finish.png");	
+	skybox_size=3000;
+	help_on=TRUE;
+	};
+
+	
+	set_callbacks();
+	init_camera(&camera, &move, &rotate);
+	
+
 
 }
 
@@ -659,6 +698,8 @@ int main(int argc, char** argv) {
 	game.collision=FALSE;
 	move.free=0;
 	checkpoint=0;
+	rotate.boat_rocking=0;
+	rotate.rock=0;
 
 	glutMainLoop();
 	return 0;
